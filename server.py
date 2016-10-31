@@ -18,12 +18,50 @@ import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 from flask import Flask, request, render_template, g, redirect, Response
+from jinja2 import Template
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
 
+def getresult(names,cursor):
+  rows=[]
+  for result in cursor:
+    for cell in result:
+      rows.append(cell)
+    names.append(rows)  # can also be accessed using result[0]
+    rows=[]
+  cursor.close()
+  context = dict(data = names)
+  return context
 
-#
+def generatesql(gselect,gfrom,gwhere):
+  gsql="SELECT "
+  for i,tlist in enumerate(gselect):
+    if i!=len(gselect)-1:
+      gsql=gsql+tlist+","
+    else:
+      gsql=gsql+tlist
+  gsql+=" FROM "
+  for i,tlist in enumerate(gfrom):
+    if i!=len(gfrom)-1:
+      gsql=gsql+tlist+","
+    else:
+      gsql=gsql+tlist
+  gsql+=" WHERE "
+  ct=0
+  for i,tlist in enumerate(gwhere):
+    if i!=0 and tlist and ct!=0:
+      gsql=gsql+" AND "+ tlist
+      ct+=1
+    elif tlist and i==0:
+      gsql=gsql+tlist
+      ct+=1
+    elif tlist:
+      gsql=gsql+tlist
+      ct+=1
+  return gsql
+
+
 # The following is a dummy URI that does not connect to a valid database. You will need to modify it to connect to your Part 2 database in order to use the data.
 #
 # XXX: The URI should be in the format of: 
@@ -48,7 +86,7 @@ engine = create_engine(DATABASEURI)
 #
 engine.execute("""CREATE TABLE IF NOT EXISTS test (
   id serial,
-  name test
+  name text
 );""")
 #engine.execute("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');""")
 #engine.execute("""select * from test;""");
@@ -109,16 +147,22 @@ def index():
   # DEBUG: this is debugging code to see what request looks like
   print request.args
 
-
   #
   # example of a database query
   #
-  cursor = g.conn.execute("SELECT name FROM test")
   
-  names = []
-  for result in cursor:
-    names.append(result['name'])  # can also be accessed using result[0]
-  cursor.close()
+
+
+  #cursor = g.conn.execute("SELECT * FROM %s;" % name)
+  # cursor = g.conn.execute("SELECT * FROM airline;")
+  # names = []
+  # rows=[]
+  # for result in cursor:
+  #   for cell in result:
+  #     rows.append(cell)
+  #   names.append(rows)  # can also be accessed using result[0]
+  #   rows=[]
+  # cursor.close()
 
   #
   # Flask uses Jinja templates, which is an extension to HTML where you can
@@ -146,14 +190,15 @@ def index():
   #     <div>{{n}}</div>
   #     {% endfor %}
   #
-  context = dict(data = names)
+  
 
-
+  
+  # context = dict(data = names)
   #
   # render_template looks in the templates/ folder for files.
   # for example, the below file reads template/index.html
   #
-  return render_template("index.html", **context)
+  return render_template("index.html")
 
 #
 # This is an example of a different path.  You can see it at:
@@ -163,17 +208,67 @@ def index():
 # Notice that the function name is another() rather than index()
 # The functions for each app.route need to have different names
 #
-@app.route('/another')
-def another():
-  return render_template("another.html")
+@app.route('/search',methods=['POST'])
+def search():
+
+  name = request.form['Tname']
+  cursor=g.conn.execute("SELECT * FROM %s;" % name)
+  names=[]
+  context=getresult(names,cursor)
+  return render_template("result.html",**context)
 
 
 # Example of adding new data to the database
 @app.route('/add', methods=['POST'])
 def add():
-  name = request.form['name']
-  g.conn.execute('INSERT INTO test VALUES (NULL, ?)', name)
-  return redirect('/')
+  name = request.form['Tname']
+  #g.conn.execute("INSERT INTO test(name) VALUES ('happy');")
+  g.conn.execute("INSERT INTO test(name) VALUES ('%s');" % name)
+  cursor=g.conn.execute("SELECT * FROM test;")
+  names = []
+  context = getresult(names,cursor)
+  return render_template("result.html",**context)
+
+#airline booking system funcs
+
+# @app.route('/table', methods=['POST'])
+# def table():
+#   name = request.form['Tname']
+#   cursor = g.conn.execute("SELECT * FROM %s;" % name)
+#   names = []
+#   context = getresult(names,cursor)
+#   return redirect('/search')
+
+
+@app.route('/ticket', methods=['POST'])
+def ticket():
+  pfrom = request.form['from']
+  pto = request.form['to']
+  pwhen = request.form['when']
+  target = ["flight_no",'depart','arrive',"date","depart_time","arrive_time","ticket_quantity","company"]
+  rlist=["flight_info"]
+  if not pfrom and not pto and not pwhen:
+    qualification=[]
+  else:
+    qualification=["depart='%s'"%pfrom if pfrom else None, "arrive='%s'" %pto if pto else None, "date='%s'"% pwhen if pwhen else None]
+  sql=generatesql(target,rlist,qualification)
+  print sql
+  cursor=g.conn.execute(sql)
+  #cursor = g.conn.execute("SELECT flight_no,depart,arrive,date,depart_time,arrive_time,ticket_quantity,company FROM flight_info where depart='%s' and arrive='%s' and date='%s';" % (pfrom,pto,pwhen))
+  names=[]
+  
+  names.append(target)
+  context = getresult(names,cursor)
+  return render_template("result.html",**context)
+
+
+
+
+
+
+
+
+#airline booking system funcs
 
 
 @app.route('/login')
