@@ -11,33 +11,19 @@
   <h1>Welcome to Airplane Ticket Booking System!</h1>
   <!-- <div>{{data}}</div> -->
 
-  <!-- <div>
-    <table border="1">
-    {% for rows in data %}
-    <tr>
-    {% for cell in rows %}
-    <td>{{cell}}</td>
-    {% endfor %}
-    </tr>
-    {% endfor %}
-   
-  </div> -->
+  
 
-<p><a href="search">Go to the other page</a></p>
+<p><a href="index">Homepage</a></p>
 
 <form method="POST" action="/add">
-add new row to test table: <input type="text" name="Tname"> <input type="submit" value="Add">
-</form></div>
-
+<p>add new row to test table: <input type="text" name="Tname"> <input type="submit" value="Add"></p>
+</form>
 <form method="POST" action="/search">
-Select Table: <input type="text" name="Tname"> <input type="submit" value="search">
+<p>Select Table: <input type="text" name="Tname"> <input type="submit" value="search"></p>
 </form>
 <p align="left">Search Ticket:</p>
-
 <form method="POST" action="/ticket">
-
     <table>
-
         <tr>
             <td><label for="text">From</label></td>
             <td><input type="text"  name="from" /></td>
@@ -58,6 +44,18 @@ Select Table: <input type="text" name="Tname"> <input type="submit" value="searc
     </table>
 </form>
 
+
+<div>
+    <table border="1" align="center">
+    {% for rows in data %}
+    <tr>
+    {% for cell in rows %}
+    <td>{{cell}}</td>
+    {% endfor %}
+    </tr>
+    {% endfor %}
+   
+  </div>
 </body>
 
 
