@@ -1,0 +1,81 @@
+<html>
+  <style>
+    body{ 
+      font-size: 15pt;
+      font-family: arial;
+    }
+  </style>
+
+
+<body>
+  <h1>Welcome to Airplane Ticket Booking System!</h1>
+    <h3>Dear {{usrname[0]}} {{usrname[1]}}</h3>
+    <h5>Account Information:</h5>
+    <table border="1" align="center">
+    {% for rows in accountinfo %}
+    <tr>
+    {% for cell in rows %}
+    <td>{{cell}}</td>
+    {% endfor %}
+    </tr>
+    {% endfor %}
+</table>   
+
+  
+
+<p><a href="/">logout</a></p>
+
+<form method="POST" action="/add">
+<p>add new row to test table: <input type="text" name="Tname"> <input type="submit" value="Add"></p>
+</form>
+<form method="POST" action="/transaction">
+<p>Check Transaction: 
+<table><tr>
+    <td><label for="text">From</label></td>
+    <td><input type="text"  name="tdatefrom" /></td>
+    <td><label for="text">To</label></td>
+    <td><input type="text"  name="tdateto" /></td>
+    <td colspan=1><input type="submit" value="search" /></td>
+</tr></table>
+</p>
+</form>
+<p align="left">Search Ticket:</p>
+<form method="POST" action="/ticket">
+    <table>
+        <tr>
+            <td><label for="text">From</label></td>
+            <td><input type="text"  name="from" /></td>
+        </tr>
+        <tr>
+            <td><label for="text">To</label></td>
+            <td><input type="text"  name="to" /></td>
+        </tr>
+        <tr>
+            <td><label for="text">When</label></td>
+            <td><input type="text" name="when" /></td>
+        </tr>
+        <tr>
+        <input type="hidden"  name="account" value = {{acct}}> 
+            <td colspan=1>
+                <input type="submit" value="submit" />
+            </td>
+        </tr>
+    </table>
+</form>
+
+
+<div>
+    <table border="1" align="center">
+    {% for rows in data %}
+    <tr>
+    {% for cell in rows %}
+    <td>{{cell}}</td>
+    {% endfor %}
+    </tr>
+    {% endfor %}
+   </table>
+  </div>
+</body>
+
+
+</html>

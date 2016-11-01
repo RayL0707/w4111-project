@@ -17,7 +17,7 @@ Read about it online.
 import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
-from flask import Flask, request, render_template, g, redirect, Response
+from flask import Flask, request, render_template,session,url_for, g, redirect, Response
 from jinja2 import Template
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
@@ -31,8 +31,8 @@ def getresult(names,cursor):
     names.append(rows)  # can also be accessed using result[0]
     rows=[]
   cursor.close()
-  context = dict(data = names)
-  return context
+  #context = dict(data = names)
+  return names
 
 def generatesql(gselect,gfrom,gwhere):
   gsql="SELECT "
@@ -60,8 +60,8 @@ def generatesql(gselect,gfrom,gwhere):
       gsql=gsql+tlist
       ct+=1
   return gsql
-
-
+glbticket=[]
+glbtransaction=[]
 # The following is a dummy URI that does not connect to a valid database. You will need to modify it to connect to your Part 2 database in order to use the data.
 #
 # XXX: The URI should be in the format of: 
@@ -132,7 +132,7 @@ def teardown_request(exception):
 # see for routing: http://flask.pocoo.org/docs/0.10/quickstart/#routing
 # see for decorators: http://simeonfranklin.com/blog/2012/jul/1/python-decorators-in-12-steps/
 #
-@app.route('/')
+@app.route('/',methods=["GET"])
 def index():
   """
   request is a special object that Flask provides to access web request information:
@@ -143,14 +143,15 @@ def index():
 
   See its API: http://flask.pocoo.org/docs/0.10/api/#incoming-request-data
   """
-
+  
   # DEBUG: this is debugging code to see what request looks like
   print request.args
 
   #
   # example of a database query
   #
-  
+  global glbticket
+  glbticket=[]
 
 
   #cursor = g.conn.execute("SELECT * FROM %s;" % name)
@@ -214,7 +215,8 @@ def search():
   name = request.form['Tname']
   cursor=g.conn.execute("SELECT * FROM %s;" % name)
   names=[]
-  context=getresult(names,cursor)
+  datas=getresult(names,cursor)
+  context = dict(data = datas)
   return render_template("result.html",**context)
 
 
@@ -226,22 +228,19 @@ def add():
   g.conn.execute("INSERT INTO test(name) VALUES ('%s');" % name)
   cursor=g.conn.execute("SELECT * FROM test;")
   names = []
-  context = getresult(names,cursor)
+  datas = getresult(names,cursor)
+  context = dict(data = datas)
   return render_template("result.html",**context)
 
 #airline booking system funcs
 
-# @app.route('/table', methods=['POST'])
-# def table():
-#   name = request.form['Tname']
-#   cursor = g.conn.execute("SELECT * FROM %s;" % name)
-#   names = []
-#   context = getresult(names,cursor)
-#   return redirect('/search')
 
-
+#customer funcs
 @app.route('/ticket', methods=['POST'])
 def ticket():
+  global glbticket
+  account=request.form['account']
+  #print account
   pfrom = request.form['from']
   pto = request.form['to']
   pwhen = request.form['when']
@@ -252,17 +251,149 @@ def ticket():
   else:
     qualification=["depart='%s'"%pfrom if pfrom else None, "arrive='%s'" %pto if pto else None, "date='%s'"% pwhen if pwhen else None]
   sql=generatesql(target,rlist,qualification)
-  print sql
+  #print sql
   cursor=g.conn.execute(sql)
   #cursor = g.conn.execute("SELECT flight_no,depart,arrive,date,depart_time,arrive_time,ticket_quantity,company FROM flight_info where depart='%s' and arrive='%s' and date='%s';" % (pfrom,pto,pwhen))
   names=[]
   
   names.append(target)
-  context = getresult(names,cursor)
-  return render_template("result.html",**context)
+  tickets = getresult(names,cursor)
+  glbticket=tickets
+  #print tickets
+  context = dict(data = tickets,acct=account)
+  #print session
+  #print session['tickets']
+  if account:
+    session['account']=account
+    return redirect('/usr')
+    
+    #return redirect('/usr')
+    #return redirect(url_for('.usr',account=account))
+  else:
+    return render_template("result.html",**context)
 
 
 
+#admin funcs
+# def transaction():
+#   pfrom = request.form['from']
+#   pto = request.form['to']
+#   pwhen = request.form['when']
+#   target = ["flight_no",'depart','arrive',"date","depart_time","arrive_time","ticket_quantity","company"]
+#   rlist=["flight_info"]
+#   if not pfrom and not pto and not pwhen:
+#     qualification=[]
+#   else:
+#     qualification=["depart='%s'"%pfrom if pfrom else None, "arrive='%s'" %pto if pto else None, "date='%s'"% pwhen if pwhen else None]
+#   sql=generatesql(target,rlist,qualification)
+#   print sql
+#   cursor=g.conn.execute(sql)
+#   #cursor = g.conn.execute("SELECT flight_no,depart,arrive,date,depart_time,arrive_time,ticket_quantity,company FROM flight_info where depart='%s' and arrive='%s' and date='%s';" % (pfrom,pto,pwhen))
+#   names=[]
+  
+#   names.append(target)
+#   context = getresult(names,cursor)
+#   return render_template("result.html",**context)
+
+#
+##
+#user website
+@app.route('/usr', methods=['POST','GET'])
+def usr():
+  global glbticket
+  global glbtransaction
+  if request.form:
+    account=request.form['account']
+    session['account']=account
+  else:
+    
+    
+    #print tickets
+    account=session['account']
+    #tickets=session['tickets']
+    #print session
+  #print type(account)
+  target = ["account","fname","lname","balance","tot_credit","card_level"]
+  rlist=["customer_get"]
+  qualification=["account='%s'"%account]
+  sql=generatesql(target,rlist,qualification)
+  cursor=g.conn.execute(sql)
+  names=[]
+  names.append(target)
+  info = getresult(names,cursor)
+
+  uname = g.conn.execute("SELECT fname,lname FROM customer_get where account='%s';" % account)
+  fullname=[]
+  for ns in uname:
+    for cell in ns:
+      fullname.append(cell)
+  uname.close()
+  #print fullname
+  #context['usrname']=fullname
+  context = dict(accountinfo = info,usrname=fullname,acct=account)
+  if glbticket:
+    print glbticket
+    context['data']=glbticket
+    glbticket=[]
+  if glbtransaction:
+    context['data']=glbtransaction
+    glbtransaction=[]
+  return render_template("login.html",**context)
+
+
+@app.route('/transaction', methods=['POST'])
+def transaction():
+  global glbtransaction
+  fdate = request.form['tdatefrom']
+  tdate=request.form['tdateto']
+  #print session['account']
+  account=session['account']
+  print account
+  target = ["T.trans_no","C.account","T.trans_time","F.flight_no","T.ticket_quantity","T.class","T.amount"]
+  target1 = ["trans_no","account","trans_time","flight","quantity","class","amount($)"]
+  rlist=["customer_get C","flight_info F","make_transaction_apply T"]
+  qualification=["C.account='%s'"%account,"C.account=T.account","F.flight_code=T.flight_code"]
+  checkdate=["T.trans_time>='%s 00:00:00'"%fdate if fdate else None,"T.trans_time<='%s 23:59:59'"%tdate if tdate else None]
+  qualification.extend(checkdate)
+  print qualification
+  sql=generatesql(target,rlist,qualification)
+  print sql
+  cursor=g.conn.execute(sql)
+  names=[]
+  names.append(target1)
+  data = getresult(names,cursor)
+  glbtransaction=data
+  return redirect('/usr')
+  # uname = g.conn.execute("SELECT fname,lname FROM customer_get where account='%s';" % account)
+  # fullname=[]
+  # for ns in uname:
+  #   for cell in ns:
+  #     fullname.append(cell)
+  # uname.close()
+  # print fullname
+  #print context
+  #context = dict(data = info,usrname=fullname)
+  #print context
+  #usrname=dict(usrname = fullname)
+  #return render_template("login.html",**context)
+
+
+
+
+
+
+
+
+
+
+
+#user website
+#
+#
+#
+#
+#
+#
 
 
 
@@ -277,6 +408,7 @@ def login():
     this_is_never_executed()
 
 
+app.secret_key='asfsdfasdfasfasdf'
 if __name__ == "__main__":
   import click
 

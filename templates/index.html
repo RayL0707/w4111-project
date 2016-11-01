@@ -23,11 +23,13 @@
    
   </div> -->
 
-<p><a href="search">Go to the other page</a></p>
-
+<p><a href="index">Go to the other page</a></p>
+<form method="POST" action="/usr">
+Enter Your Account: <input type="text" name="account"> <input type="submit" value="enter"></form>
 <form method="POST" action="/add">
 add new row to test table: <input type="text" name="Tname"> <input type="submit" value="Add">
-</form></div>
+</form>
+
 
 <form method="POST" action="/search">
 Select Table: <input type="text" name="Tname"> <input type="submit" value="search">
@@ -50,12 +52,14 @@ Select Table: <input type="text" name="Tname"> <input type="submit" value="searc
             <td><label for="text">When</label></td>
             <td><input type="text" name="when" /></td>
         </tr>
+        <input type="hidden"  name="account" value = {{acct}}> 
         <tr>
             <td colspan=1>
                 <input type="submit" value="submit" />
             </td>
         </tr>
     </table>
+
 </form>
 
 </body>
