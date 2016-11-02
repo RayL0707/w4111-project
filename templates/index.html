@@ -23,16 +23,30 @@
    
   </div> -->
 
-<p><a href="index">Go to the other page</a></p>
+<p><a href="">Homepage</a></p>
 <form method="POST" action="/usr">
-Enter Your Account: <input type="text" name="account"> <input type="submit" value="enter"></form>
-<form method="POST" action="/add">
+<table>
+<tr>
+<td><label for="text">Account</label></td> 
+<td><input type="text" name="account"></td>
+<td><label for="text">Password</label></td>  
+<td><input type="password" name="psswrd"></td>
+<td><input type="submit" value="enter"></td>
+</tr></table>
+</form>
+<!-- <form method="POST" action="/add">
 add new row to test table: <input type="text" name="Tname"> <input type="submit" value="Add">
 </form>
 
 
 <form method="POST" action="/search">
 Select Table: <input type="text" name="Tname"> <input type="submit" value="search">
+</form> -->
+<form method="post" action="/admin">
+<table><tr>
+    <td><label for="text">OR:   Log In as Admin</label></td> 
+    <td><button type="submit">Enter</button></td>
+</table></tr>
 </form>
 <p align="left">Search Ticket:</p>
 
@@ -51,6 +65,10 @@ Select Table: <input type="text" name="Tname"> <input type="submit" value="searc
         <tr>
             <td><label for="text">When</label></td>
             <td><input type="text" name="when" /></td>
+        </tr>
+        <tr>
+            <td><label for="text">flight no</label></td>
+            <td><input type="text" name="flightno" /></td>
         </tr>
         <input type="hidden"  name="account" value = {{acct}}> 
         <tr>

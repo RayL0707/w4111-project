@@ -47,6 +47,8 @@ def generatesql(gselect,gfrom,gwhere):
       gsql=gsql+tlist+","
     else:
       gsql=gsql+tlist
+  if not gwhere:
+    return gsql
   gsql+=" WHERE "
   ct=0
   for i,tlist in enumerate(gwhere):
@@ -60,8 +62,22 @@ def generatesql(gselect,gfrom,gwhere):
       gsql=gsql+tlist
       ct+=1
   return gsql
+#glbclearance=[0]
 glbticket=[]
 glbtransaction=[]
+glbinfo=[0]
+glbcompany=[]
+glbairport=[]
+glbtitle={
+  'airline':["company","country","lines_quantity","profit_$_billion","planes_quantity"],
+  'airport':["aname","tel","address","capacity","tot_area","country"],
+  'crew_serve':["workid","fname","lname","gender","age","phone","job","plane_code","serve_length","salary"],
+  'customer_get':["account","ssn","balance","fname","lname","phone","address","gender","tot_credit","card_level"],
+  'flight_info':[ "flight_no" ,"flight_code" , "plane_code","date","depart_time","arrive_time","ticket_quantity","trans_time", "ticket_nums_c","depart","arrive","company" ],
+  'make_transaction_apply':["trans_no","account","flight_code","trans_time","ticket_quantity","class","amount"],
+  'plane_info': ["plane_type","plane_code","capacity","status","serve_length"],
+  'test':[]
+}
 # The following is a dummy URI that does not connect to a valid database. You will need to modify it to connect to your Part 2 database in order to use the data.
 #
 # XXX: The URI should be in the format of: 
@@ -150,9 +166,18 @@ def index():
   #
   # example of a database query
   #
+  #global glbclearance
   global glbticket
+  global glbtransaction
+  global glbinfo
+  global glbcompany
+  global glbairport
   glbticket=[]
-
+  glbtransaction=[]
+  glbinfo[0]=0
+  glbcompany=[]
+  glbairport=[]
+  #glbclearance[0]=0
 
   #cursor = g.conn.execute("SELECT * FROM %s;" % name)
   # cursor = g.conn.execute("SELECT * FROM airline;")
@@ -211,13 +236,15 @@ def index():
 #
 @app.route('/search',methods=['POST'])
 def search():
-
+  global glbtitle
   name = request.form['Tname']
   cursor=g.conn.execute("SELECT * FROM %s;" % name)
   names=[]
+  if glbtitle[name]:
+    names.append(glbtitle[name])
   datas=getresult(names,cursor)
   context = dict(data = datas)
-  return render_template("result.html",**context)
+  return render_template("admin.html",**context)
 
 
 # Example of adding new data to the database
@@ -230,26 +257,33 @@ def add():
   names = []
   datas = getresult(names,cursor)
   context = dict(data = datas)
-  return render_template("result.html",**context)
+  return render_template("admin.html",**context)
 
 #airline booking system funcs
 
 
-#customer funcs
+#shared funcs
 @app.route('/ticket', methods=['POST'])
 def ticket():
   global glbticket
-  account=request.form['account']
+  global glbinfo
+  #global glbclearance
+  glbticket=[]
+  if request.form:
+    account=request.form['account']
+  else:
+    account=None
   #print account
   pfrom = request.form['from']
   pto = request.form['to']
   pwhen = request.form['when']
+  flightno=request.form['flightno']
   target = ["flight_no",'depart','arrive',"date","depart_time","arrive_time","ticket_quantity","company"]
   rlist=["flight_info"]
-  if not pfrom and not pto and not pwhen:
+  if not pfrom and not pto and not pwhen and not flightno:
     qualification=[]
   else:
-    qualification=["depart='%s'"%pfrom if pfrom else None, "arrive='%s'" %pto if pto else None, "date='%s'"% pwhen if pwhen else None]
+    qualification=["depart='%s'"%pfrom if pfrom else None, "arrive='%s'" %pto if pto else None, "date='%s'"% pwhen if pwhen else None, "flight_no='%s'"% flightno if flightno else None]
   sql=generatesql(target,rlist,qualification)
   #print sql
   cursor=g.conn.execute(sql)
@@ -259,60 +293,38 @@ def ticket():
   names.append(target)
   tickets = getresult(names,cursor)
   glbticket=tickets
-  #print tickets
-  context = dict(data = tickets,acct=account)
   #print session
   #print session['tickets']
+  context = dict(data = tickets,acct=account)
   if account:
+    #context = dict(data = tickets,acct=account)
     session['account']=account
+    glbinfo[0]=1
     return redirect('/usr')
     
     #return redirect('/usr')
     #return redirect(url_for('.usr',account=account))
+  elif glbinfo[0]==2:
+    return render_template("admin.html",**context)
   else:
     return render_template("result.html",**context)
 
-
-
-#admin funcs
-# def transaction():
-#   pfrom = request.form['from']
-#   pto = request.form['to']
-#   pwhen = request.form['when']
-#   target = ["flight_no",'depart','arrive',"date","depart_time","arrive_time","ticket_quantity","company"]
-#   rlist=["flight_info"]
-#   if not pfrom and not pto and not pwhen:
-#     qualification=[]
-#   else:
-#     qualification=["depart='%s'"%pfrom if pfrom else None, "arrive='%s'" %pto if pto else None, "date='%s'"% pwhen if pwhen else None]
-#   sql=generatesql(target,rlist,qualification)
-#   print sql
-#   cursor=g.conn.execute(sql)
-#   #cursor = g.conn.execute("SELECT flight_no,depart,arrive,date,depart_time,arrive_time,ticket_quantity,company FROM flight_info where depart='%s' and arrive='%s' and date='%s';" % (pfrom,pto,pwhen))
-#   names=[]
-  
-#   names.append(target)
-#   context = getresult(names,cursor)
-#   return render_template("result.html",**context)
-
-#
-##
 #user website
+
 @app.route('/usr', methods=['POST','GET'])
 def usr():
   global glbticket
   global glbtransaction
+  global glbinfo
+  global glbcompany
+  global glbairport
+
   if request.form:
     account=request.form['account']
     session['account']=account
   else:
-    
-    
-    #print tickets
     account=session['account']
-    #tickets=session['tickets']
-    #print session
-  #print type(account)
+  
   target = ["account","fname","lname","balance","tot_credit","card_level"]
   rlist=["customer_get"]
   qualification=["account='%s'"%account]
@@ -332,14 +344,24 @@ def usr():
   #context['usrname']=fullname
   context = dict(accountinfo = info,usrname=fullname,acct=account)
   if glbticket:
-    print glbticket
+    #print glbticket
     context['data']=glbticket
-    glbticket=[]
+    #glbticket=[]
   if glbtransaction:
     context['data']=glbtransaction
     glbtransaction=[]
-  return render_template("login.html",**context)
-
+  if glbcompany:
+    context['subinfo']=glbcompany
+    glbcompany=[]
+  if glbairport:
+    context['subinfo']=glbairport
+    glbairport=[]
+  #print glbinfo[0]
+  if glbinfo[0]==1:#have ticket table; including company,airport
+    glbinfo[0]=0
+    return render_template("loginfo.html",**context)
+  else:#don't have ticket table; including transaction
+    return render_template("login.html",**context)
 
 @app.route('/transaction', methods=['POST'])
 def transaction():
@@ -348,14 +370,14 @@ def transaction():
   tdate=request.form['tdateto']
   #print session['account']
   account=session['account']
-  print account
+  #print account
   target = ["T.trans_no","C.account","T.trans_time","F.flight_no","T.ticket_quantity","T.class","T.amount"]
   target1 = ["trans_no","account","trans_time","flight","quantity","class","amount($)"]
   rlist=["customer_get C","flight_info F","make_transaction_apply T"]
   qualification=["C.account='%s'"%account,"C.account=T.account","F.flight_code=T.flight_code"]
   checkdate=["T.trans_time>='%s 00:00:00'"%fdate if fdate else None,"T.trans_time<='%s 23:59:59'"%tdate if tdate else None]
   qualification.extend(checkdate)
-  print qualification
+  #print qualification
   sql=generatesql(target,rlist,qualification)
   print sql
   cursor=g.conn.execute(sql)
@@ -364,36 +386,94 @@ def transaction():
   data = getresult(names,cursor)
   glbtransaction=data
   return redirect('/usr')
-  # uname = g.conn.execute("SELECT fname,lname FROM customer_get where account='%s';" % account)
-  # fullname=[]
-  # for ns in uname:
-  #   for cell in ns:
-  #     fullname.append(cell)
-  # uname.close()
-  # print fullname
-  #print context
-  #context = dict(data = info,usrname=fullname)
-  #print context
-  #usrname=dict(usrname = fullname)
-  #return render_template("login.html",**context)
 
+@app.route('/subinfo/airline/<company>', methods=['POST','GET'])
+def showcompany(company):
+  global glbinfo
+  global glbcompany
+  target = ["company","country","lines_quantity","profit_$_billion","planes_quantity"]
+  rlist=["airline"]
+  qualification=["company='%s'"%company]
+  sql=generatesql(target,rlist,qualification)
+  print sql
+  cursor=g.conn.execute(sql)
+  names=[]
+  names.append(target)
+  cominfo = getresult(names,cursor)
+  glbcompany=cominfo
+  glbinfo[0]=1
+  return redirect('/usr')
 
-
-
-
-
-
-
-
-
+@app.route('/subinfo/airport/<airport>', methods=['POST','GET'])
+def showairport(airport):
+  global glbinfo
+  global glbairport
+  target = ["aname","tel","address","country","capacity","tot_area"]
+  target1 = ["Airport","Tel","Address","Country","Capacity(people)","Area(m^2)"]
+  rlist=["airport"]
+  qualification=["aname='%s'"%airport]
+  sql=generatesql(target,rlist,qualification)
+  print sql
+  cursor=g.conn.execute(sql)
+  names=[]
+  names.append(target1)
+  airinfo = getresult(names,cursor)
+  glbairport=airinfo
+  glbinfo[0]=1
+  return redirect('/usr')
 
 #user website
-#
-#
-#
-#
-#
-#
+#admin website
+
+@app.route('/admin', methods=['POST'])
+def admin():
+  global glbinfo
+  glbinfo[0]=2
+  return render_template("admin.html")
+
+@app.route('/status', methods=['POST'])
+def status():
+  global glbinfo
+  glbinfo[0]=2
+  flightno=request.form['flightno']
+  target = ["F.flight_no","F.company","F.depart","F.arrive","F.plane_code","P.plane_type","P.capacity","P.status","P.serve_length"]
+  target1 = ["flight_no","company","depart","arrive","plane_code","plane_type","capacity","status(%)","serve_length(yrs)"]
+  rlist=["flight_info F","plane_info P"]
+  if not flightno:
+    qualification=["F.plane_code=P.plane_code"]
+  else:
+    qualification=["flight_no='%s'"% flightno if flightno else None,"F.plane_code=P.plane_code"]
+  sql=generatesql(target,rlist,qualification)
+  cursor=g.conn.execute(sql)
+  names=[]
+  names.append(target1)
+  flightinfo = getresult(names,cursor)
+
+  context=dict(data=flightinfo)
+  return render_template("admin.html",**context)
+
+@app.route('/crew', methods=['POST'])
+def crew():
+  global glbinfo
+  glbinfo[0]=2
+  planecode=request.form['planecode']
+  target = ["P.plane_code","P.plane_type","C.workid","C.fname","C.lname","C.gender","C.age","C.job","C.serve_length","C.salary"]
+  target1 = ["plane_code","plane_type","workid","fname","lname","gender","age","job","serve_length(yr)","salary($/yr"]
+  rlist=["crew_serve C","plane_info P"]
+  if not flightno:
+    qualification=["C.plane_code=P.plane_code"]
+  else:
+    qualification=["P.plane_code='%s'"% planecode if planecode else None,"C.plane_code=P.plane_code"]
+  sql=generatesql(target,rlist,qualification)
+  cursor=g.conn.execute(sql)
+  names=[]
+  names.append(target1)
+  crewinfo = getresult(names,cursor)
+
+  context=dict(data=crewinfo)
+  return render_template("admin.html",**context)
+
+#admin website
 
 
 

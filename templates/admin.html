@@ -9,19 +9,21 @@
 
 <body>
   <h1>Welcome to Airplane Ticket Booking System!</h1>
+  <h3>Log In as Administrator</h3>
   <!-- <div>{{data}}</div> -->
 
   
 
-<p><a href="/">Homepage</a></p>
+<p><a href="/">Logout</a></p>
 
-<!-- <form method="POST" action="/add">
+<form method="POST" action="/add">
 <p>add new row to test table: <input type="text" name="Tname"> <input type="submit" value="Add"></p>
 </form>
 <form method="POST" action="/search">
 <p>Select Table: <input type="text" name="Tname"> <input type="submit" value="search"></p>
-</form> -->
-<p align="left">Search Ticket:</p>
+<p>Current Tables: (airline, airport, crew_serve, customer_get, flight_info, make_transaction_apply, plane_info, test)</p>
+</form>
+<p align="left">Manage Flights:</p>
 <form method="POST" action="/ticket">
     <table>
         <tr>
@@ -48,8 +50,14 @@
         </tr>
     </table>
 </form>
-
-
+<table><tr>
+<td><form method="POST" action="/status">
+<p>Check Status for Flight No: <input type="text" name="flightno"> <input type="submit" value="check"></p>
+</form></td>
+<td><form method="POST" action="/status">
+<p>Check Crews for Plane(code): <input type="text" name="plancode"> <input type="submit" value="check"></p>
+</form></td>
+</tr></table>
 <div>
     <table border="1" align="center">
     {% for rows in data %}

@@ -11,7 +11,7 @@
   <h1>Welcome to Airplane Ticket Booking System!</h1>
     <h3>Dear {{usrname[0]}} {{usrname[1]}}</h3>
     <h5>Account Information:</h5>
-    <table border="1" align="center">
+    <table  border="1" align="center">
     {% for rows in accountinfo %}
     <tr>
     {% for cell in rows %}
@@ -19,7 +19,7 @@
     {% endfor %}
     </tr>
     {% endfor %}
-</table>   
+</table>
 
   
 
@@ -67,18 +67,42 @@
     </table>
 </form>
 
-
+</p>
 <div>
     <table border="1" align="center">
-    {% for rows in data %}
+    <tr>
+    {% for cells in data[0] %}
+    <td>{{cells}}</td>
+    {% endfor %}
+    </tr>
+    {% for rows in data[1:] %}
+    <tr>
+    {% for cell in rows %}
+    <td>{{cell}}</td>
+    {% endfor %}
+    <td>BUY</td>
+    </tr>
+    {% endfor %}
+   </table>
+  </div>
+
+
+{% if data|length==2 %}
+<p>CHECK MORE INFO:</p>
+<p>Depart:<a href="/subinfo/airport/{{data[1][1]}}">{{data[1][1]}}</a>  Arrive: <a href="/subinfo/airport/{{data[1][2]}}">{{data[1][2]}} </a> Company: <a href="/subinfo/airline/{{data[1][7]}}">  {{data[1][7]}}</a>
+<table align='center' border="1" align="center">
+    {% for rows in subinfo %}
     <tr>
     {% for cell in rows %}
     <td>{{cell}}</td>
     {% endfor %}
     </tr>
     {% endfor %}
-   </table>
-  </div>
+</table>  
+</p>
+{%endif %}
+
+
 </body>
 
 
