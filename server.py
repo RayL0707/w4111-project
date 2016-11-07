@@ -280,12 +280,12 @@ def ticket():
   flightno=request.form['flightno']
   target = ["flight_no",'depart','arrive',"date","depart_time","arrive_time","ticket_quantity","company"]
   rlist=["flight_info"]
-  if not pfrom and not pto and not pwhen and not flightno:
+  if pfrom=="---" and pto=="---" and pwhen=="---" and not flightno:
     qualification=[]
   else:
-    qualification=["depart='%s'"%pfrom if pfrom else None, "arrive='%s'" %pto if pto else None, "date='%s'"% pwhen if pwhen else None, "flight_no='%s'"% flightno if flightno else None]
+    qualification=["depart='%s'"%pfrom if pfrom!="---" else None, "arrive='%s'" %pto if pto!="---" else None, "date='%s'"% pwhen if pwhen!="---" else None, "flight_no='%s'"% flightno if flightno else None]
   sql=generatesql(target,rlist,qualification)
-  #print sql
+  print sql
   cursor=g.conn.execute(sql)
   #cursor = g.conn.execute("SELECT flight_no,depart,arrive,date,depart_time,arrive_time,ticket_quantity,company FROM flight_info where depart='%s' and arrive='%s' and date='%s';" % (pfrom,pto,pwhen))
   names=[]
@@ -375,7 +375,7 @@ def transaction():
   target1 = ["trans_no","account","trans_time","flight","quantity","class","amount($)"]
   rlist=["customer_get C","flight_info F","make_transaction_apply T"]
   qualification=["C.account='%s'"%account,"C.account=T.account","F.flight_code=T.flight_code"]
-  checkdate=["T.trans_time>='%s 00:00:00'"%fdate if fdate else None,"T.trans_time<='%s 23:59:59'"%tdate if tdate else None]
+  checkdate=["T.trans_time>='%s 00:00:00'"%fdate if fdate!="---" else None,"T.trans_time<='%s 23:59:59'"%tdate if tdate!="---" else None]
   qualification.extend(checkdate)
   #print qualification
   sql=generatesql(target,rlist,qualification)
@@ -460,7 +460,7 @@ def crew():
   target = ["P.plane_code","P.plane_type","C.workid","C.fname","C.lname","C.gender","C.age","C.job","C.serve_length","C.salary"]
   target1 = ["plane_code","plane_type","workid","fname","lname","gender","age","job","serve_length(yr)","salary($/yr"]
   rlist=["crew_serve C","plane_info P"]
-  if not flightno:
+  if not planecode:
     qualification=["C.plane_code=P.plane_code"]
   else:
     qualification=["P.plane_code='%s'"% planecode if planecode else None,"C.plane_code=P.plane_code"]
