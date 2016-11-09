@@ -8,7 +8,7 @@ To run locally:
 
     python server.py
 
-Go to http://localhost:8118 in your browser.
+Go to http://localhost:8111 in your browser.
 
 A debugger such as "pdb" may be helpful for debugging.
 Read about it online.
@@ -104,10 +104,10 @@ engine = create_engine(DATABASEURI)
 # Example of running queries in your database
 # Note that this will probably not work if you already have a table named 'test' in your database, containing meaningful data. This is only an example showing you how to run queries in your database using SQLAlchemy.
 #
-# engine.execute("""CREATE TABLE IF NOT EXISTS test (
-#   id serial,
-#   name text
-# );""")
+engine.execute("""CREATE TABLE IF NOT EXISTS test (
+  id serial,
+  name text
+);""")
 
 # tst=g.conn.execute("select count(*) from make_transaction_apply;")
 # print tst
@@ -543,7 +543,7 @@ if __name__ == "__main__":
   @click.option('--debug', is_flag=True)
   @click.option('--threaded', is_flag=True)
   @click.argument('HOST', default='0.0.0.0')
-  @click.argument('PORT', default=8118, type=int)
+  @click.argument('PORT', default=8111, type=int)
   def run(debug, threaded, host, port):
     """
     This function handles command line parameters.
