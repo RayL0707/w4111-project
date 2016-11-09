@@ -349,7 +349,7 @@ def usr():
   uname.close()
   #print fullname
   #context['usrname']=fullname
-  context = dict(accountinfo = info,usrname=fullname,acct=account,maket=0)
+  context = dict(accountinfo = info,usrname=fullname,acct=account)
   if glbticket:
     #print glbticket
     context['data']=glbticket
@@ -364,7 +364,6 @@ def usr():
     context['subinfo']=glbairport
     glbairport=[]
   if currenttrans:
-    context['maket']=1
     context['data']=currenttrans
     currenttrans=[]
     glbinfo[0]=0
@@ -544,7 +543,7 @@ if __name__ == "__main__":
   @click.option('--debug', is_flag=True)
   @click.option('--threaded', is_flag=True)
   @click.argument('HOST', default='0.0.0.0')
-  @click.argument('PORT', default=8111, type=int)
+  @click.argument('PORT', default=6000, type=int)
   def run(debug, threaded, host, port):
     """
     This function handles command line parameters.
