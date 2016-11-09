@@ -8,7 +8,7 @@ To run locally:
 
     python server.py
 
-Go to http://localhost:8111 in your browser.
+Go to http://localhost:8118 in your browser.
 
 A debugger such as "pdb" may be helpful for debugging.
 Read about it online.
@@ -291,7 +291,7 @@ def ticket():
   else:
     qualification=["depart='%s'"%pfrom if pfrom!="---" else None, "arrive='%s'" %pto if pto!="---" else None, "date='%s'"% pwhen if pwhen!="---" else None, "flight_no='%s'"% flightno if flightno!="---" else None]
   sql=generatesql(target,rlist,qualification)
-  print sql
+  #print sql
   cursor=g.conn.execute(sql)
   #cursor = g.conn.execute("SELECT flight_no,depart,arrive,date,depart_time,arrive_time,ticket_quantity,company FROM flight_info where depart='%s' and arrive='%s' and date='%s';" % (pfrom,pto,pwhen))
   names=[]
@@ -407,7 +407,7 @@ def showcompany(company):
   rlist=["airline"]
   qualification=["company='%s'"%company]
   sql=generatesql(target,rlist,qualification)
-  print sql
+  #print sql
   cursor=g.conn.execute(sql)
   names=[]
   names.append(target)
@@ -425,7 +425,7 @@ def showairport(airport):
   rlist=["airport"]
   qualification=["aname='%s'"%airport]
   sql=generatesql(target,rlist,qualification)
-  print sql
+  #print sql
   cursor=g.conn.execute(sql)
   names=[]
   names.append(target1)
@@ -454,10 +454,10 @@ def buyticket(flightno):
   # qualification=["aname='%s'"%airport]
   flightcode=flightno
   sql="UPDATE flight_info SET ticket_quantity=ticket_quantity-1 WHERE flight_code='%s'" % flightcode
-  print sql
+  #print sql
   cursor=g.conn.execute(sql)
   sql1="INSERT INTO make_transaction_apply VALUES ('trans%d','%s','%s','%s','1','Economy',200.00);" % (glbtransno,account,flightcode,st)
-  print sql1
+  #print sql1
   cursor1=g.conn.execute(sql1)
   names=[]
   names.append(target1)
@@ -544,7 +544,7 @@ if __name__ == "__main__":
   @click.option('--debug', is_flag=True)
   @click.option('--threaded', is_flag=True)
   @click.argument('HOST', default='0.0.0.0')
-  @click.argument('PORT', default=8111, type=int)
+  @click.argument('PORT', default=8118, type=int)
   def run(debug, threaded, host, port):
     """
     This function handles command line parameters.
