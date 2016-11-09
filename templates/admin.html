@@ -9,19 +9,35 @@
 
 <body>
   <h1>Welcome to Airplane Ticket Booking System!</h1>
-  <h3>Log In as Administrator</h3>
+  <h3>Log In as <font color='red'>Administrator</font></h3>
   <!-- <div>{{data}}</div> -->
 
   
 
 <p><a href="/">Logout</a></p>
 
-<form method="POST" action="/add">
+<!-- <form method="POST" action="/add">
 <p>add new row to test table: <input type="text" name="Tname"> <input type="submit" value="Add"></p>
-</form>
+</form> -->
 <form method="POST" action="/search">
-<p>Select Table: <input type="text" name="Tname"> <input type="submit" value="search"></p>
-<p>Current Tables: (airline, airport, crew_serve, customer_get, flight_info, make_transaction_apply, plane_info, test)</p>
+<table>
+        <tr>
+            <td><label for="text">Select Tables:</label></td>
+            <td><select name="Tname">
+            <option value="airline">airline</option>
+            <option value="airport">airport</option>
+            <option value="crew_serve">crew_serve</option>
+            <option value="customer_get">customer_get</option>
+            <option value="flight_info">flight_info</option>
+            <option value="make_transaction_apply">make_transaction_apply</option>
+            <option value="plane_info">plane_info</option>
+            <option value="test">test</option>
+          </select></td>
+        <td><input type="submit" value="search"></td>
+        </tr>
+  </table>
+<!-- <p>Select Table: <input type="text" name="Tname"> <input type="submit" value="search"></p> -->
+<!-- <p>Current Tables: (airline, airport, crew_serve, customer_get, flight_info, make_transaction_apply, plane_info, test)</p> -->
 </form>
 <p align="left">Manage Flights:</p>
 <form method="POST" action="/ticket">
@@ -38,7 +54,7 @@
             <option value="Tokyo">Tokyo</option>
             <option value="Vancouver">Vancouver</option>
           </select></td>
-            <!-- <td><input type="text"  name="from" /></td> -->
+            
         </tr>
         <tr>
             <td><label for="text">To</label></td>
@@ -61,7 +77,20 @@
             </select></td>
         <tr>
             <td><label for="text">flight no</label></td>
-            <td><input type="text" name="flightno" /></td>
+            <td><select name="flightno">
+            <option value="---">----------</option>
+            <option value="f0001">f0001</option>
+            <option value="f0002">f0002</option>
+            <option value="f0003">f0003</option>
+            <option value="f0004">f0004</option>
+            <option value="f0005">f0005</option>
+            <option value="f0006">f0006</option>
+            <option value="f0007">f0007</option>
+            <option value="f0008">f0008</option>
+            <option value="f0009">f0009</option>
+            <option value="f0010">f0010</option>
+          </select></td>
+            <!-- <td><input type="text" name="flightno" /></td> -->
         </tr>
         <input type="hidden"  name="account" value = {{acct}}>
         <tr>
@@ -73,10 +102,38 @@
 </form>
 <table><tr>
 <td><form method="POST" action="/status">
-<p>Check Status for Flight No: <input type="text" name="flightno"> <input type="submit" value="check"></p>
+<td>Check Status for Flight No:</td>
+<td><select name="flightno">
+            <option value="---">-----------------</option>
+            <option value="f0001">f0001</option>
+            <option value="f0002">f0002</option>
+            <option value="f0003">f0003</option>
+            <option value="f0004">f0004</option>
+            <option value="f0005">f0005</option>
+            <option value="f0006">f0006</option>
+            <option value="f0007">f0007</option>
+            <option value="f0008">f0008</option>
+            <option value="f0009">f0009</option>
+            <option value="f0010">f0010</option>
+          </select></td>
+<td><input type="submit" value="check"></td>
 </form></td>
 <td><form method="POST" action="/crew">
-<p>Check Crews for Plane(code): <input type="text" name="planecode"> <input type="submit" value="check"></p>
+<td>Check Crews for Plane(code):</td>
+<td><select name="planecode">
+            <option value="---">---------------------</option>
+            <option value="B74700001">B74700001</option>
+            <option value="B74700002">B74700002</option>
+            <option value="A380001">A380001</option>
+            <option value="A380002">A380002</option>
+            <option value="B7478001">B7478001</option>
+            <option value="B7478001">B7478002</option>
+            <option value="A300002">A300001</option>
+            <option value="A300002">A300002</option>
+            <option value="A318001">A318001</option>
+            <option value="A318002">A318002</option>
+          </select></td>
+<td><input type="submit" value="check"></td>
 </form></td>
 </tr></table>
 <div>

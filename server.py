@@ -19,6 +19,8 @@ from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 from flask import Flask, request, render_template,session,url_for, g, redirect, Response
 from jinja2 import Template
+import time
+import datetime
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
@@ -63,6 +65,8 @@ def generatesql(gselect,gfrom,gwhere):
       ct+=1
   return gsql
 #glbclearance=[0]
+glbtransno=12
+currenttrans=[]
 glbticket=[]
 glbtransaction=[]
 glbinfo=[0]
@@ -104,8 +108,9 @@ engine.execute("""CREATE TABLE IF NOT EXISTS test (
   id serial,
   name text
 );""")
-#engine.execute("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');""")
-#engine.execute("""select * from test;""");
+
+# tst=g.conn.execute("select count(*) from make_transaction_apply;")
+# print tst
 
 @app.before_request
 def before_request():
@@ -217,7 +222,7 @@ def index():
   #     {% endfor %}
   #
   
-
+  
   
   # context = dict(data = names)
   #
@@ -240,6 +245,7 @@ def search():
   name = request.form['Tname']
   cursor=g.conn.execute("SELECT * FROM %s;" % name)
   names=[]
+  #print trannms[0][0],type(trannms[0][0])
   if glbtitle[name]:
     names.append(glbtitle[name])
   datas=getresult(names,cursor)
@@ -278,12 +284,12 @@ def ticket():
   pto = request.form['to']
   pwhen = request.form['when']
   flightno=request.form['flightno']
-  target = ["flight_no",'depart','arrive',"date","depart_time","arrive_time","ticket_quantity","company"]
+  target = ["flight_no","flight_code",'depart','arrive',"date","depart_time","arrive_time","ticket_quantity","company"]
   rlist=["flight_info"]
-  if pfrom=="---" and pto=="---" and pwhen=="---" and not flightno:
+  if pfrom=="---" and pto=="---" and pwhen=="---" and flightno=="---":
     qualification=[]
   else:
-    qualification=["depart='%s'"%pfrom if pfrom!="---" else None, "arrive='%s'" %pto if pto!="---" else None, "date='%s'"% pwhen if pwhen!="---" else None, "flight_no='%s'"% flightno if flightno else None]
+    qualification=["depart='%s'"%pfrom if pfrom!="---" else None, "arrive='%s'" %pto if pto!="---" else None, "date='%s'"% pwhen if pwhen!="---" else None, "flight_no='%s'"% flightno if flightno!="---" else None]
   sql=generatesql(target,rlist,qualification)
   print sql
   cursor=g.conn.execute(sql)
@@ -318,7 +324,8 @@ def usr():
   global glbinfo
   global glbcompany
   global glbairport
-
+  global glbtransno
+  global currenttrans
   if request.form:
     account=request.form['account']
     session['account']=account
@@ -342,7 +349,7 @@ def usr():
   uname.close()
   #print fullname
   #context['usrname']=fullname
-  context = dict(accountinfo = info,usrname=fullname,acct=account)
+  context = dict(accountinfo = info,usrname=fullname,acct=account,maket=0)
   if glbticket:
     #print glbticket
     context['data']=glbticket
@@ -356,6 +363,11 @@ def usr():
   if glbairport:
     context['subinfo']=glbairport
     glbairport=[]
+  if currenttrans:
+    context['maket']=1
+    context['data']=currenttrans
+    currenttrans=[]
+    glbinfo[0]=0
   #print glbinfo[0]
   if glbinfo[0]==1:#have ticket table; including company,airport
     glbinfo[0]=0
@@ -379,7 +391,7 @@ def transaction():
   qualification.extend(checkdate)
   #print qualification
   sql=generatesql(target,rlist,qualification)
-  print sql
+  #print sql
   cursor=g.conn.execute(sql)
   names=[]
   names.append(target1)
@@ -422,6 +434,42 @@ def showairport(airport):
   glbinfo[0]=1
   return redirect('/usr')
 
+@app.route('/buy/<flightno>', methods=['POST','GET'])
+def buyticket(flightno):
+  global glbinfo
+  global glbairport
+  global glbtransno
+  global glbtitle
+  global currenttrans
+  tst=g.conn.execute("SELECT count(*) FROM make_transaction_apply")
+  nms=[]
+  trannms=getresult(nms,tst)
+  glbtransno=trannms[0][0]+1
+  account=session['account']
+  ts=time.time()
+  st=datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+  # target = ["aname","tel","address","country","capacity","tot_area"]
+  target1 = glbtitle["make_transaction_apply"]
+  # rlist=["airport"]
+  # qualification=["aname='%s'"%airport]
+  flightcode=flightno
+  sql="UPDATE flight_info SET ticket_quantity=ticket_quantity-1 WHERE flight_code='%s'" % flightcode
+  print sql
+  cursor=g.conn.execute(sql)
+  sql1="INSERT INTO make_transaction_apply VALUES ('trans%d','%s','%s','%s','1','Economy',200.00);" % (glbtransno,account,flightcode,st)
+  print sql1
+  cursor1=g.conn.execute(sql1)
+  names=[]
+  names.append(target1)
+  sql2="SELECT * FROM make_transaction_apply WHERE trans_no='trans%d'" % glbtransno
+  cursor2=g.conn.execute(sql2)
+  currenttrans=getresult(names,cursor2)
+  glbinfo[0]=1
+  return redirect('/usr')
+
+
+
+
 #user website
 #admin website
 
@@ -460,10 +508,10 @@ def crew():
   target = ["P.plane_code","P.plane_type","C.workid","C.fname","C.lname","C.gender","C.age","C.job","C.serve_length","C.salary"]
   target1 = ["plane_code","plane_type","workid","fname","lname","gender","age","job","serve_length(yr)","salary($/yr"]
   rlist=["crew_serve C","plane_info P"]
-  if not planecode:
+  if planecode=="---":
     qualification=["C.plane_code=P.plane_code"]
   else:
-    qualification=["P.plane_code='%s'"% planecode if planecode else None,"C.plane_code=P.plane_code"]
+    qualification=["P.plane_code='%s'"% planecode if planecode!="---" else None,"C.plane_code=P.plane_code"]
   sql=generatesql(target,rlist,qualification)
   cursor=g.conn.execute(sql)
   names=[]
@@ -488,7 +536,7 @@ def login():
     this_is_never_executed()
 
 
-app.secret_key='asfsdfasdfasfasdf'
+app.secret_key='asfsdfsdfasfasdf'
 if __name__ == "__main__":
   import click
 

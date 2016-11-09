@@ -91,7 +91,19 @@ Select Table: <input type="text" name="Tname"> <input type="submit" value="searc
         </tr>
         <tr>
             <td><label for="text">flight no</label></td>
-            <td><input type="text" name="flightno" /></td>
+            <td><select name="flightno">
+            <option value="---">-----------------</option>
+            <option value="f0001">f0001</option>
+            <option value="f0002">f0002</option>
+            <option value="f0003">f0003</option>
+            <option value="f0004">f0004</option>
+            <option value="f0005">f0005</option>
+            <option value="f0006">f0006</option>
+            <option value="f0007">f0007</option>
+            <option value="f0008">f0008</option>
+            <option value="f0009">f0009</option>
+            <option value="f0010">f0010</option>
+          </select></td>
         </tr>
         <input type="hidden"  name="account" value = {{acct}}> 
         <tr>

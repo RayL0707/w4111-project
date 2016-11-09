@@ -9,7 +9,7 @@
 
 <body>
   <h1>Welcome to Airplane Ticket Booking System!</h1>
-    <h3>Dear {{usrname[0]}} {{usrname[1]}}</h3>
+    <h3>Dear <font color='blue'>{{usrname[0]}} {{usrname[1]}}</font></h3>
     <h5>Account Information:</h5>
     <table  border="1" align="center">
     {% for rows in accountinfo %}
@@ -89,7 +89,19 @@
         </tr>
         <tr>
             <td><label for="text">flight no</label></td>
-            <td><input type="text" name="flightno" /></td>
+            <td><select name="flightno">
+            <option value="---">-----------------</option>
+            <option value="f0001">f0001</option>
+            <option value="f0002">f0002</option>
+            <option value="f0003">f0003</option>
+            <option value="f0004">f0004</option>
+            <option value="f0005">f0005</option>
+            <option value="f0006">f0006</option>
+            <option value="f0007">f0007</option>
+            <option value="f0008">f0008</option>
+            <option value="f0009">f0009</option>
+            <option value="f0010">f0010</option>
+          </select></td>
         </tr>
         <tr>
         <input type="hidden"  name="account" value = {{acct}}> 
@@ -113,7 +125,7 @@
     {% for cell in rows %}
     <td>{{cell}}</td>
     {% endfor %}
-    <td>BUY</td>
+    <td><a href="/buy/{{rows[1]}}">BUY</a></td>
     </tr>
     {% endfor %}
    </table>
