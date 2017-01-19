@@ -92,7 +92,7 @@ glbtitle={
 #
 #     DATABASEURI = "postgresql://gravano:foobar@w4111a.eastus.cloudapp.azure.com/proj1part2"
 #
-DATABASEURI = "postgresql://rl2849:7410@w4111vm.eastus.cloudapp.azure.com/w4111"
+DATABASEURI = "postgresql://USER:PASSWORD@w4111a.eastus.cloudapp.azure.com/proj1part2"
 
 
 #
