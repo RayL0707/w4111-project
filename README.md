@@ -1,6 +1,6 @@
 # w4111-project  
 Air Plane Information Management System    
-Project    
+09/2016--12/2016    
 Rong Lei, Hongyu Yang   
 Description    
 This database project is designed for airline companies to manage its flight information and
