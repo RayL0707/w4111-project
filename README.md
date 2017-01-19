@@ -1,8 +1,8 @@
 # w4111-project
-#Air Plane Information Management System
-#Project
-#Rong Lei, Hongyu Yang
-#Description
+Air Plane Information Management System
+Project
+Rong Lei, Hongyu Yang
+Description
 This database project is designed for airline companies to manage its flight information and
 customers to check the flight information and make transactions. The entities for the project are
 flight info, transaction, customer, card level, airport, airline, plane info, and crew member. In this
